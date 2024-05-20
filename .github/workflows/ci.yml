@@ -3,8 +3,11 @@ name: CI
 on:
   push:
   pull_request:
-  schedule:
-    - cron: '0 0 * * 3'
+    branches:
+      - main
+    paths:
+      - 'lib/**'
+      - 'lv_font_conv.js'
 
 jobs:
   test:
@@ -13,13 +16,21 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ '14' ]
+        node-version: [18, 20]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+
+    - name: Cache node modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.OS }}-npm-cache-
 
     - run: npm install
     - run: npm test
